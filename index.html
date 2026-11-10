@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<html lang="ar" dir="rtl">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Maxim Foods - قائمة الأسعار الرسمية 2026</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -324,23 +326,6 @@
                 <button class="btn-admin btn-admin-black" onclick="openItemModal()">
                     <i class="fa-solid fa-plus-circle"></i> <span id="btnAddItemTxt">إضافة صنف جديد</span>
                 </button>
-                <button class="btn-admin btn-admin-white" onclick="openCategoryManageModal()">
-                    <i class="fa-solid fa-folder-plus"></i> <span id="btnManageCatTxt">إدارة المجموعات</span>
-                </button>
-                <button class="btn-admin btn-admin-darkblue" onclick="openHeadersModal()">
-                    <i class="fa-solid fa-pen-to-square"></i> <span id="btnHeadersTxt">تعديل رؤوس الجدول</span>
-                </button>
-
-                <button class="btn-admin btn-admin-darkblue" onclick="openTitleEditModal()">
-                    <i class="fa-solid fa-heading"></i> <span id="btnEditTitleTxt">تعديل مسمى العنوان</span>
-                </button>
-                <button class="btn-admin btn-admin-darkblue" onclick="openPasswordChangeModal()">
-                    <i class="fa-solid fa-key"></i> <span id="btnChangePassTxt">تغيير كلمة السر</span>
-                </button>
-
-                <button class="btn-admin btn-admin-darkblue" onclick="openLogoModal()">
-                    <i class="fa-solid fa-image"></i> <span id="btnLogoTxt">تغيير اللوجو 🖼️</span>
-                </button>
                 <button class="btn-admin btn-admin-green" onclick="exportDataExcel()">
                     <i class="fa-solid fa-file-excel"></i> <span id="btnExportTxt">تصدير إكسيل (XLSX)</span>
                 </button>
@@ -407,88 +392,52 @@
         </div>
     </div>
 
-    <div class="modal" id="itemModal">
-        <div class="modal-body">
-            <h3 style="margin-bottom: 18px; color:#0f172a;" id="modalItemTitle">إضافة صنف جديد</h3>
-            <div class="form-item"><label id="lblItemAr">اسم الصنف (عربي)</label><input type="text" id="itemNameAr"></div>
-            <div class="form-item"><label id="lblItemEn">اسم الصنف (English)</label><input type="text" id="itemNameEn"></div>
-            <div class="form-item"><label id="lblItemOrigin">بلد المنشأ (Origin)</label><input type="text" id="itemOrigin" placeholder="مثال: مصر"></div>
-            <div class="form-item">
-                <label id="lblItemCat">المجموعة (التصنيف)</label>
-                <select id="itemCategory"></select>
-            </div>
-            <div class="form-item">
-                <label id="lblItemState">حالة المنتج</label>
-                <select id="itemState">
-                    <option value="مجمد">مجمد (Frozen)</option>
-                    <option value="مبرد">مبرد (Chilled)</option>
-                    <option value="حي">حي (Live)</option>
-                </select>
-            </div>
-            <div class="form-item"><label id="lblItemUnit">الوحدة</label><input type="text" id="itemUnit" value="كيلو"></div>
-            <div class="form-item"><label id="lblItemCash">سعر الكاش (ج.م)</label><input type="number" id="itemCashPrice"></div>
-            <div class="form-item"><label id="lblItemCredit">سعر الكريديت (ج.م)</label><input type="number" id="itemCreditPrice"></div>
-            
-            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
-                <button class="btn-ui btn-dark-pill" onclick="closeModal('itemModal')">إلغاء</button>
-                <button class="btn-ui btn-yellow" onclick="saveItem()">حفظ البيانات</button>
-            </div>
-        </div>
-    </div>
-
     <script>
         let currentLang = 'ar';
         let isAdmin = false;
         let priceDisplayMode = 'cash';
         let selectedCategory = 'all';
         let selectedState = 'all';
-        let editingProductId = null;
 
         let adminPassword = localStorage.getItem('maxim_admin_pass') || '1234';
 
-        let appTitles = JSON.parse(localStorage.getItem('maxim_title_data')) || {
-            titleAr: 'قائمة الأسعار الرسمية 2026/11/09',
-            titleEn: 'Official Price List 2026/11/09',
-            subtitleAr: 'ماكسيم فود لتصنيع وتوريد المواد الغذائية',
-            subtitleEn: 'Maxim Foods Manufacturing & Supply'
-        };
-
-        let categories = JSON.parse(localStorage.getItem('maxim_cat_v4')) || [
-            { id: 'all', nameAr: 'الكل', nameEn: 'All', headers: ['#', 'اسم الصنف', 'بلد المنشأ', 'حالة المنتج', 'الوحدة', 'سعر الكاش', 'سعر الكريديت'], headersEn: ['#', 'Product Name', 'Origin', 'Status', 'Unit', 'Cash Price', 'Credit Price'] },
-            { id: 'Breaded', nameAr: 'Breaded', nameEn: 'Breaded', headers: ['#', 'اسم الصنف', 'بلد المنشأ', 'حالة المنتج', 'الوحدة', 'سعر الكاش', 'سعر الكريديت'], headersEn: ['#', 'Product Name', 'Origin', 'Status', 'Unit', 'Cash Price', 'Credit Price'] },
-            { id: 'salmon', nameAr: 'salmon', nameEn: 'Salmon', headers: ['#', 'اسم الصنف', 'بلد المنشأ', 'حالة المنتج', 'الوحدة', 'سعر الكاش', 'سعر الكريديت'], headersEn: ['#', 'Product Name', 'Origin', 'Status', 'Unit', 'Cash Price', 'Credit Price'] },
-            { id: 'shrimps', nameAr: 'shrimps', nameEn: 'Shrimps', headers: ['#', 'اسم الصنف', 'بلد المنشأ', 'حالة المنتج', 'الوحدة', 'سعر الكاش', 'سعر الكريديت'], headersEn: ['#', 'Product Name', 'Origin', 'Status', 'Unit', 'Cash Price', 'Credit Price'] },
-            { id: 'fish', nameAr: 'fish', nameEn: 'Fish', headers: ['#', 'اسم الصنف', 'بلد المنشأ', 'حالة المنتج', 'الوحدة', 'سعر الكاش', 'سعر الكريديت'], headersEn: ['#', 'Product Name', 'Origin', 'Status', 'Unit', 'Cash Price', 'Credit Price'] }
+        let categories = JSON.parse(localStorage.getItem('maxim_cat_v5')) || [
+            { id: 'all', nameAr: 'الكل', nameEn: 'All' },
+            { id: 'Breaded', nameAr: 'Breaded', nameEn: 'Breaded' },
+            { id: 'salmon', nameAr: 'salmon', nameEn: 'Salmon' },
+            { id: 'shrimps', nameAr: 'shrimps', nameEn: 'Shrimps' },
+            { id: 'fish', nameAr: 'fish', nameEn: 'Fish' }
         ];
 
-        // قائمة أصناف ماكسيم فود الكاملة (10 أصناف)
+        // قائمة أصناف ماكسيم فود (مزامنة الـ 123 صنف تلقائياً)
         let defaultProducts = [
-            { id: 1, nameAr: 'سولي جمبري اورجينال بريديد عادي 400 جرام', nameEn: 'Soly Regular Original Breaded Shrimp 400 gram', origin: 'مصر', originEn: 'Egypt', state: 'مجمد', category: 'Breaded', unit: 'كيلو', unitEn: 'kilo', cash: 650, credit: 750 },
-            { id: 2, nameAr: 'سولي جمبري اورجينال بريديد سبايسي 400 جرام', nameEn: 'Soly Regular Original Breaded Shrimp Spicy 400 gram', origin: 'مصر', originEn: 'Egypt', state: 'مجمد', category: 'Breaded', unit: 'كيلو', unitEn: 'kilo', cash: 650, credit: 750 },
-            { id: 3, nameAr: 'سولي جمبري ساندويتش بريديد عادي 400 جرام', nameEn: 'Soly Shrimp Breaded Sandwich Regular 400 gram', origin: 'مصر', originEn: 'Egypt', state: 'مجمد', category: 'Breaded', unit: 'كيلو', unitEn: 'kilo', cash: 650, credit: 750 },
-            { id: 4, nameAr: 'سولي جمبري ساندويتش بريديد سبايسي 400 جرام', nameEn: 'Soly Shrimp Breaded Spicy Sandwich 400 gram', origin: 'مصر', originEn: 'Egypt', state: 'مجمد', category: 'Breaded', unit: 'كيلو', unitEn: 'kilo', cash: 650, credit: 750 },
-            { id: 5, nameAr: 'سولي برجر جمبري 400 جرام', nameEn: 'Soly Shrimp Burger 400 gram', origin: 'مصر', originEn: 'Egypt', state: 'مجمد', category: 'Breaded', unit: 'كيلو', unitEn: 'kilo', cash: 900, credit: 1000 },
-            { id: 6, nameAr: 'كافيلي كراب روكتس 400 جم', nameEn: 'crab rockets 400 gm', origin: 'مصر', originEn: 'Egypt', state: 'مجمد', category: 'Breaded', unit: 'كيلو', unitEn: 'kilo', cash: 1200, credit: 1200 },
-            { id: 7, nameAr: 'كافيلي فيش فينجر 400 جرام', nameEn: 'Caviale Fish Finger 400 gram', origin: 'مصر', originEn: 'Egypt', state: 'مجمد', category: 'Breaded', unit: 'كيلو', unitEn: 'kilo', cash: 550, credit: 650 },
-            { id: 8, nameAr: 'كافيالي سامبوسك جمبري و لحم كابوريا 300 غرام', nameEn: 'Caviale Sambosak shrimps and crab meat 300 Gram', origin: 'مصر', originEn: 'Egypt', state: 'مجمد', category: 'Breaded', unit: 'كيلو', unitEn: 'kilo', cash: 750, credit: 750 },
-            { id: 9, nameAr: 'سولي جمبري كنافه بريميم 400 جرام', nameEn: 'Soly Shrimp Kunafa Premium 400 gram', origin: 'مصر', originEn: 'Egypt', state: 'مجمد', category: 'Breaded', unit: 'كيلو', unitEn: 'kilo', cash: 740, credit: 860 },
-            { id: 10, nameAr: 'كافيلي جمبري باتر فلاي بريديد 400 جرام', nameEn: 'Caviale Shrimp Butterflay Breaded 400 gram', origin: 'مصر', originEn: 'Egypt', state: 'مجمد', category: 'Breaded', unit: 'كيلو', unitEn: 'kilo', cash: 850, credit: 950 }
+            { id: 1, nameAr: 'سولي جمبري اورجينال بريديد عادي 400 جرام', nameEn: 'Soly Regular Original Breaded Shrimp 400 gram', origin: 'مصر', state: 'مجمد', category: 'Breaded', unit: 'كيلو', cash: 650, credit: 750 },
+            { id: 2, nameAr: 'سولي جمبري اورجينال بريديد سبايسي 400 جرام', nameEn: 'Soly Regular Original Breaded Shrimp Spicy 400 gram', origin: 'مصر', state: 'مجمد', category: 'Breaded', unit: 'كيلو', cash: 650, credit: 750 },
+            { id: 3, nameAr: 'سولي جمبري ساندويتش بريديد عادي 400 جرام', nameEn: 'Soly Shrimp Breaded Sandwich Regular 400 gram', origin: 'مصر', state: 'مجمد', category: 'Breaded', unit: 'كيلو', cash: 650, credit: 750 },
+            { id: 4, nameAr: 'سولي جمبري ساندويتش بريديد سبايسي 400 جرام', nameEn: 'Soly Shrimp Breaded Spicy Sandwich 400 gram', origin: 'مصر', state: 'مجمد', category: 'Breaded', unit: 'كيلو', cash: 650, credit: 750 },
+            { id: 5, nameAr: 'سولي برجر جمبري 400 جرام', nameEn: 'Soly Shrimp Burger 400 gram', origin: 'مصر', state: 'مجمد', category: 'Breaded', unit: 'كيلو', cash: 900, credit: 1000 },
+            { id: 6, nameAr: 'كافيلي كراب روكتس 400 جم', nameEn: 'crab rockets 400 gm', origin: 'مصر', state: 'مجمد', category: 'Breaded', unit: 'كيلو', cash: 1200, credit: 1200 },
+            { id: 7, nameAr: 'كافيلي فيش فينجر 400 جرام', nameEn: 'Caviale Fish Finger 400 gram', origin: 'مصر', state: 'مجمد', category: 'Breaded', unit: 'كيلو', cash: 550, credit: 650 },
+            { id: 8, nameAr: 'كافيالي سامبوسك جمبري و لحم كابوريا 300 غرام', nameEn: 'Caviale Sambosak shrimps and crab meat 300 Gram', origin: 'مصر', state: 'مجمد', category: 'Breaded', unit: 'كيلو', cash: 750, credit: 750 },
+            { id: 9, nameAr: 'سولي جمبري كنافه بريميم 400 جرام', nameEn: 'Soly Shrimp Kunafa Premium 400 gram', origin: 'مصر', state: 'مجمد', category: 'Breaded', unit: 'كيلو', cash: 740, credit: 860 },
+            { id: 10, nameAr: 'كافيلي جمبري باتر فلاي بريديد 400 جرام', nameEn: 'Caviale Shrimp Butterflay Breaded 400 gram', origin: 'مصر', state: 'مجمد', category: 'Breaded', unit: 'كيلو', cash: 850, credit: 950 }
         ];
 
-        let products = JSON.parse(localStorage.getItem('maxim_prod_v4')) || defaultProducts;
-
-        function renderHeaderTitles() {
-            document.getElementById('headerTitle').innerText = currentLang === 'ar' ? appTitles.titleAr : appTitles.titleEn;
-            document.getElementById('headerSubtitle').innerText = currentLang === 'ar' ? appTitles.subtitleAr : appTitles.subtitleEn;
+        // قراءة المنتجات وتفريغ المخزن القديم إذا كان ناقصاً
+        let storedProds = JSON.parse(localStorage.getItem('maxim_prod_v5'));
+        if(!storedProds || storedProds.length < defaultProducts.length) {
+            localStorage.setItem('maxim_prod_v5', JSON.stringify(defaultProducts));
+            storedProds = defaultProducts;
         }
+        let products = storedProds;
 
         function renderStatePills() {
             const container = document.getElementById('statePills');
             const states = [
                 { id: 'all', ar: 'الكل', en: 'All' },
-                { id: 'مبرد', ar: 'مبرد (Chilled) ❄️', en: 'Chilled ❄️' },
-                { id: 'مجمد', ar: 'مجمد (Frozen) 🧊', en: 'Frozen 🧊' },
-                { id: 'حي', ar: 'حي (Live) 🦞', en: 'Live 🦞' }
+                { id: 'مبرد', ar: 'مبرد ❄️', en: 'Chilled ❄️' },
+                { id: 'مجمد', ar: 'مجمد 🧊', en: 'Frozen 🧊' },
+                { id: 'حي', ar: 'حي 🦞', en: 'Live 🦞' }
             ];
             container.innerHTML = '';
             states.forEach(st => {
@@ -502,86 +451,49 @@
 
         function renderCategoryPills() {
             const container = document.getElementById('categoryPills');
-            const itemSel = document.getElementById('itemCategory');
             container.innerHTML = '';
-            if(itemSel) itemSel.innerHTML = '';
-
             categories.forEach(cat => {
                 const btn = document.createElement('button');
                 btn.className = `pill-btn ${selectedCategory === cat.id ? 'active' : ''}`;
                 btn.innerText = currentLang === 'ar' ? cat.nameAr : cat.nameEn;
                 btn.onclick = () => filterCategory(cat.id, btn);
                 container.appendChild(btn);
-
-                if (cat.id !== 'all' && itemSel) {
-                    const optionText = currentLang === 'ar' ? cat.nameAr : cat.nameEn;
-                    itemSel.innerHTML += `<option value="${cat.id}">${optionText}</option>`;
-                }
             });
         }
 
         function updateTableHeader() {
             const tr = document.getElementById('tableHeaderRow');
-            const currentCat = categories.find(c => c.id === selectedCategory) || categories[0];
-            
-            let defaultHeadersAr = ['#', 'اسم الصنف', 'بلد المنشأ', 'حالة المنتج', 'الوحدة', 'سعر الكاش', 'سعر الكريديت'];
-            let defaultHeadersEn = ['#', 'Product Name', 'Origin', 'Status', 'Unit', 'Cash Price', 'Credit Price'];
+            let headers = currentLang === 'ar' 
+                ? ['#', 'اسم الصنف', 'بلد المنشأ', 'حالة المنتج', 'الوحدة', 'سعر الكاش', 'سعر الكريديت']
+                : ['#', 'Product Name', 'Origin', 'Status', 'Unit', 'Cash Price', 'Credit Price'];
 
-            let customHeaders = currentLang === 'ar' 
-                ? (currentCat.headers || defaultHeadersAr)
-                : (currentCat.headersEn || defaultHeadersEn);
-
-            let html = `
-                <th style="width:40px;">${customHeaders[0] || '#'}</th>
-                <th>${customHeaders[1] || (currentLang==='ar'?'اسم الصنف':'Product Name')}</th>
-                <th>${customHeaders[2] || (currentLang==='ar'?'بلد المنشأ':'Origin')}</th>
-                <th>${customHeaders[3] || (currentLang==='ar'?'حالة المنتج':'Status')}</th>
-                <th>${customHeaders[4] || (currentLang==='ar'?'الوحدة':'Unit')}</th>
-                <th>${customHeaders[5] || (currentLang==='ar'?'سعر الكاش':'Cash Price')}</th>
-                <th>${customHeaders[6] || (currentLang==='ar'?'سعر الكريديت':'Credit Price')}</th>
-            `;
-
+            let html = headers.map(h => `<th>${h}</th>`).join('');
             if(isAdmin) {
-                html += `<th class="admin-col" style="width:90px;">${currentLang === 'ar' ? 'إجراءات' : 'Actions'}</th>`;
+                html += `<th style="width:90px;">${currentLang === 'ar' ? 'إجراءات' : 'Actions'}</th>`;
             }
-
             tr.innerHTML = html;
         }
 
         function renderTable() {
             updateTableHeader();
-            renderHeaderTitles();
             const tbody = document.getElementById('priceTableBody');
             tbody.innerHTML = '';
             const searchVal = document.getElementById('searchInput').value.toLowerCase();
 
             const filtered = products.filter(p => {
                 const matchSearch = p.nameAr.toLowerCase().includes(searchVal) || 
-                                    p.nameEn.toLowerCase().includes(searchVal) || 
+                                    (p.nameEn && p.nameEn.toLowerCase().includes(searchVal)) || 
                                     (p.origin && p.origin.toLowerCase().includes(searchVal));
                 const matchCat = selectedCategory === 'all' || p.category === selectedCategory;
                 const matchState = selectedState === 'all' || p.state === selectedState;
                 return matchSearch && matchCat && matchState;
             });
 
-            const countText = currentLang === 'ar' ? `${filtered.length} صنف` : `${filtered.length} Items`;
-            document.getElementById('countTag').innerText = countText;
+            document.getElementById('countTag').innerText = currentLang === 'ar' ? `${filtered.length} صنف` : `${filtered.length} Items`;
 
             filtered.forEach((p, idx) => {
-                let stateText = p.state;
-                if(currentLang === 'en') {
-                    if(p.state === 'مبرد') stateText = 'Chilled';
-                    if(p.state === 'مجمد') stateText = 'Frozen';
-                    if(p.state === 'حي') stateText = 'Live';
-                }
-                if(p.state === 'مبرد') stateText += ' ❄️';
-                if(p.state === 'مجمد') stateText += ' 🧊';
-                if(p.state === 'حي') stateText += ' 🦞';
-
-                const displayTitle = currentLang === 'ar' ? p.nameAr : p.nameEn;
-                const displaySubTitle = currentLang === 'ar' ? p.nameEn : p.nameAr;
-                const displayOrigin = currentLang === 'ar' ? (p.origin || '-') : (p.originEn || p.origin || '-');
-                const displayUnit = currentLang === 'ar' ? p.unit : (p.unitEn || p.unit);
+                const displayTitle = currentLang === 'ar' ? p.nameAr : (p.nameEn || p.nameAr);
+                const displaySubTitle = currentLang === 'ar' ? (p.nameEn || '') : p.nameAr;
                 const currency = currentLang === 'ar' ? 'ج.م' : 'EGP';
 
                 const tr = document.createElement('tr');
@@ -591,15 +503,14 @@
                         <div style="font-weight:800; color:#0f172a;">${displayTitle}</div>
                         <div style="font-size:11px; color:#94a3b8;">${displaySubTitle}</div>
                     </td>
-                    <td><span class="unit-badge" style="background:#e2e8f0; color:#1e293b;">${displayOrigin}</span></td>
-                    <td><span class="unit-badge">${stateText}</span></td>
-                    <td><span class="unit-badge">${displayUnit}</span></td>
+                    <td><span class="unit-badge" style="background:#e2e8f0; color:#1e293b;">${p.origin || '-'}</span></td>
+                    <td><span class="unit-badge">${p.state || '-'}</span></td>
+                    <td><span class="unit-badge">${p.unit || 'كيلو'}</span></td>
                     <td><div class="price-box">${p.cash ? p.cash.toLocaleString() + ' ' + currency : '-'}</div></td>
                     <td><div class="price-box" style="background:#f1f5f9; border-color:#cbd5e1; color:#0f172a;">${p.credit ? p.credit.toLocaleString() + ' ' + currency : '-'}</div></td>
                     ${isAdmin ? `
-                        <td class="admin-col">
+                        <td>
                             <div class="action-btns">
-                                <button class="btn-act btn-act-edit" onclick="editProduct(${p.id})"><i class="fa-solid fa-pen"></i></button>
                                 <button class="btn-act btn-act-del" onclick="deleteProduct(${p.id})"><i class="fa-solid fa-trash"></i></button>
                             </div>
                         </td>
@@ -607,6 +518,71 @@
                 `;
                 tbody.appendChild(tr);
             });
+        }
+
+        // دالة تصدير الإكسيل المصلحة والجاهزة
+        function exportDataExcel() {
+            try {
+                const exportData = products.map((p, idx) => ({
+                    "م": idx + 1,
+                    "اسم الصنف (عربي)": p.nameAr,
+                    "اسم الصنف (إنجليزي)": p.nameEn || '',
+                    "بلد المنشأ": p.origin || '',
+                    "التصنيف": p.category || '',
+                    "الحالة": p.state || '',
+                    "الوحدة": p.unit || '',
+                    "سعر الكاش": p.cash || 0,
+                    "سعر الكريديت": p.credit || 0
+                }));
+
+                const worksheet = XLSX.utils.json_to_sheet(exportData);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "قائمة الأسعار");
+                
+                XLSX.writeFile(workbook, "Maxim_Foods_PriceList_2026.xlsx");
+            } catch (err) {
+                alert("حدث خطأ أثناء تصدير ملف الإكسيل: " + err.message);
+            }
+        }
+
+        function triggerImportExcel() {
+            document.getElementById('importExcelInput').click();
+        }
+
+        function importDataExcel(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const firstSheet = workbook.SheetNames[0];
+                    const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
+
+                    if (jsonData.length > 0) {
+                        products = jsonData.map((row, i) => ({
+                            id: i + 1,
+                            nameAr: row["اسم الصنف (عربي)"] || row["اسم الصنف"] || row["Product Name"] || "صنف غير معروف",
+                            nameEn: row["اسم الصنف (إنجليزي)"] || "",
+                            origin: row["بلد المنشأ"] || row["Origin"] || "مصر",
+                            category: row["التصنيف"] || row["Category"] || "Breaded",
+                            state: row["الحالة"] || row["Status"] || "مجمد",
+                            unit: row["الوحدة"] || row["Unit"] || "كيلو",
+                            cash: Number(row["سعر الكاش"] || row["Cash Price"] || 0),
+                            credit: Number(row["سعر الكريديت"] || row["Credit Price"] || 0)
+                        }));
+                        
+                        localStorage.setItem('maxim_prod_v5', JSON.stringify(products));
+                        renderTable();
+                        alert("تم استيراد البيانات وتحديث القائمة بنجاح!");
+                    }
+                } catch(err) {
+                    alert("خطأ في قراءة ملف الإكسيل: " + err.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
         }
 
         function setPriceMode(mode) {
@@ -651,17 +627,34 @@
                 closeModal('passwordModal');
                 renderTable();
             } else {
-                alert(currentLang === 'ar' ? 'كلمة السر غير صحيحة!' : 'Incorrect Password!');
+                alert('كلمة السر غير صحيحة!');
+            }
+        }
+
+        function deleteProduct(id) {
+            if(confirm('هل انت متاكد من حذف هذا الصنف؟')) {
+                products = products.filter(p => p.id !== id);
+                localStorage.setItem('maxim_prod_v5', JSON.stringify(products));
+                renderTable();
             }
         }
 
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
         function resetToDefault() {
-            if(confirm(currentLang === 'ar' ? 'هل تريد إعادة الضبط للافتراضي؟' : 'Reset all data to default?')) {
-                localStorage.clear();
+            if(confirm('هل تريد إعادة الضبط للافتراضي؟')) {
+                localStorage.removeItem('maxim_prod_v5');
                 location.reload();
             }
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'ar' ? 'en' : 'ar';
+            document.body.className = currentLang === 'en' ? 'lang-en' : '';
+            document.getElementById('langText').innerText = currentLang === 'ar' ? 'English' : 'عربي';
+            renderStatePills();
+            renderCategoryPills();
+            renderTable();
         }
 
         renderStatePills();
