@@ -251,7 +251,6 @@
 
         .action-btns { display: flex; gap: 6px; }
         .btn-act { width: 32px; height: 32px; border-radius: 6px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .btn-act-edit { background-color: #dbeafe; color: #2563eb; }
         .btn-act-del { background-color: #fee2e2; color: #dc2626; }
 
         .modal {
@@ -285,7 +284,7 @@
                     <span id="logoTextFallback" class="logo-text-fallback">MAXIM FOODS</span>
                 </div>
                 <div class="header-info">
-                    <h1 id="headerTitle">Official Price List 2026/11/09</h1>
+                    <h1 id="headerTitle">Official Price List 2026/11/10</h1>
                     <p id="headerSubtitle">ماكسيم فود لتصنيع وتوريد المواد الغذائية</p>
                 </div>
             </div>
@@ -323,9 +322,6 @@
                 <span id="txtAdminPanelTitle">لوحة تحكم الأدمن (Admin Panel)</span>
             </div>
             <div class="admin-buttons">
-                <button class="btn-admin btn-admin-black" onclick="openItemModal()">
-                    <i class="fa-solid fa-plus-circle"></i> <span id="btnAddItemTxt">إضافة صنف جديد</span>
-                </button>
                 <button class="btn-admin btn-admin-green" onclick="exportDataExcel()">
                     <i class="fa-solid fa-file-excel"></i> <span id="btnExportTxt">تصدير إكسيل (XLSX)</span>
                 </button>
@@ -334,7 +330,7 @@
                 </button>
                 <input type="file" id="importExcelInput" accept=".xlsx, .xls" style="display:none;" onchange="importDataExcel(event)">
                 <button class="btn-admin btn-admin-red" onclick="resetToDefault()">
-                    <i class="fa-solid fa-rotate-right"></i> <span id="btnResetTxt">استعادة الافتراضي</span>
+                    <i class="fa-solid fa-rotate-right"></i> <span id="btnResetTxt">استعادة الافتراضي (123 صنف)</span>
                 </button>
             </div>
         </div>
@@ -344,7 +340,7 @@
         <div class="filter-card">
             <div class="search-field">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="searchInput" placeholder="ابحث باسم الصنف..." oninput="renderTable()">
+                <input type="text" id="searchInput" placeholder="ابحث باسم الصنف أو بلد المنشأ..." oninput="renderTable()">
             </div>
 
             <div class="filter-group">
@@ -362,7 +358,7 @@
                     <div class="table-title-accent"></div>
                     <div>
                         <h2 id="txtTableSubHeading">قائمة أسعار المنتجات المتاحة</h2>
-                        <p id="txtTableUpdateDate">تاريخ التحديث الرسمي: 2026-11-09</p>
+                        <p id="txtTableUpdateDate">تاريخ التحديث الرسمي: 2026-11-10</p>
                     </div>
                 </div>
                 <div class="tag-yellow" id="countTag">0 صنف</div>
@@ -401,32 +397,148 @@
 
         let adminPassword = localStorage.getItem('maxim_admin_pass') || '1234';
 
-        let categories = JSON.parse(localStorage.getItem('maxim_cat_v5')) || [
+        let categories = [
             { id: 'all', nameAr: 'الكل', nameEn: 'All' },
-            { id: 'Breaded', nameAr: 'Breaded', nameEn: 'Breaded' },
-            { id: 'salmon', nameAr: 'salmon', nameEn: 'Salmon' },
-            { id: 'shrimps', nameAr: 'shrimps', nameEn: 'Shrimps' },
-            { id: 'fish', nameAr: 'fish', nameEn: 'Fish' }
+            { id: 'salmon', nameAr: 'سلمون', nameEn: 'Salmon' },
+            { id: 'smoked salamon', nameAr: 'سلمون مدخن', nameEn: 'Smoked Salmon' },
+            { id: 'shrimps', nameAr: 'جمبري', nameEn: 'Shrimps' },
+            { id: 'Breaded', nameAr: 'بريديد (مغلف)', nameEn: 'Breaded' },
+            { id: 'fish', nameAr: 'أسماك', nameEn: 'Fish' },
+            { id: 'shellfish', nameAr: 'صدفيات وبحريات', nameEn: 'Shellfish' },
+            { id: 'seafood specialities', nameAr: 'أصناف خاصة', nameEn: 'Seafood Specialities' }
         ];
 
-        // قائمة أصناف ماكسيم فود (مزامنة الـ 123 صنف تلقائياً)
+        // القائمة الكاملة (123 صنفاً) مستخرجة بالكامل من ملف الإكسيل
         let defaultProducts = [
-            { id: 1, nameAr: 'سولي جمبري اورجينال بريديد عادي 400 جرام', nameEn: 'Soly Regular Original Breaded Shrimp 400 gram', origin: 'مصر', state: 'مجمد', category: 'Breaded', unit: 'كيلو', cash: 650, credit: 750 },
-            { id: 2, nameAr: 'سولي جمبري اورجينال بريديد سبايسي 400 جرام', nameEn: 'Soly Regular Original Breaded Shrimp Spicy 400 gram', origin: 'مصر', state: 'مجمد', category: 'Breaded', unit: 'كيلو', cash: 650, credit: 750 },
-            { id: 3, nameAr: 'سولي جمبري ساندويتش بريديد عادي 400 جرام', nameEn: 'Soly Shrimp Breaded Sandwich Regular 400 gram', origin: 'مصر', state: 'مجمد', category: 'Breaded', unit: 'كيلو', cash: 650, credit: 750 },
-            { id: 4, nameAr: 'سولي جمبري ساندويتش بريديد سبايسي 400 جرام', nameEn: 'Soly Shrimp Breaded Spicy Sandwich 400 gram', origin: 'مصر', state: 'مجمد', category: 'Breaded', unit: 'كيلو', cash: 650, credit: 750 },
-            { id: 5, nameAr: 'سولي برجر جمبري 400 جرام', nameEn: 'Soly Shrimp Burger 400 gram', origin: 'مصر', state: 'مجمد', category: 'Breaded', unit: 'كيلو', cash: 900, credit: 1000 },
-            { id: 6, nameAr: 'كافيلي كراب روكتس 400 جم', nameEn: 'crab rockets 400 gm', origin: 'مصر', state: 'مجمد', category: 'Breaded', unit: 'كيلو', cash: 1200, credit: 1200 },
-            { id: 7, nameAr: 'كافيلي فيش فينجر 400 جرام', nameEn: 'Caviale Fish Finger 400 gram', origin: 'مصر', state: 'مجمد', category: 'Breaded', unit: 'كيلو', cash: 550, credit: 650 },
-            { id: 8, nameAr: 'كافيالي سامبوسك جمبري و لحم كابوريا 300 غرام', nameEn: 'Caviale Sambosak shrimps and crab meat 300 Gram', origin: 'مصر', state: 'مجمد', category: 'Breaded', unit: 'كيلو', cash: 750, credit: 750 },
-            { id: 9, nameAr: 'سولي جمبري كنافه بريميم 400 جرام', nameEn: 'Soly Shrimp Kunafa Premium 400 gram', origin: 'مصر', state: 'مجمد', category: 'Breaded', unit: 'كيلو', cash: 740, credit: 860 },
-            { id: 10, nameAr: 'كافيلي جمبري باتر فلاي بريديد 400 جرام', nameEn: 'Caviale Shrimp Butterflay Breaded 400 gram', origin: 'مصر', state: 'مجمد', category: 'Breaded', unit: 'كيلو', cash: 850, credit: 950 }
+            {"id": 1, "nameAr": "سلمون كامل نرويجي 4-5 سي بورن", "nameEn": "Salmon Whole 4-5 /Kg Seaborn", "origin": "Norway", "category": "salmon", "state": "مجمد", "unit": "kilo", "cash": 570, "credit": 570},
+            {"id": 2, "nameAr": "سلمون كامل نرويجي 3-4 سي بورن", "nameEn": "Salmon Whole 3-4 /Kg Seaborn", "origin": "Norway", "category": "salmon", "state": "مجمد", "unit": "kilo", "cash": 560, "credit": 560},
+            {"id": 3, "nameAr": "سلمون كامل نرويجي 4-5 نرويل", "nameEn": "Salmon Whole 4-5 /Kg Norwel", "origin": "Norway", "category": "salmon", "state": "مجمد", "unit": "kilo", "cash": 560, "credit": 560},
+            {"id": 4, "nameAr": "سلمون كامل نرويجي 3-4 نرويل", "nameEn": "Salmon Whole 3-4 /Kg Norwel", "origin": "Norway", "category": "salmon", "state": "مجمد", "unit": "kilo", "cash": 550, "credit": 550},
+            {"id": 5, "nameAr": "سلمون جنب كامل نرويج ( 1000- 1300)", "nameEn": "Salmon whole side fillet ( 1000- 1300)", "origin": "Norway", "category": "salmon", "state": "مجمد", "unit": "kilo", "cash": 830, "credit": 830},
+            {"id": 6, "nameAr": "سلمون جنب كامل نرويج ( 1300- 1600 )", "nameEn": "Salmon whole side fillet ( 1300- 1600 )", "origin": "Norway", "category": "salmon", "state": "مجمد", "unit": "kilo", "cash": 850, "credit": 850},
+            {"id": 7, "nameAr": "سالمون ساشيمى قطع مبرد", "nameEn": "salamon sashimi cuts chielld", "origin": "Norway", "category": "salmon", "state": "مبرد", "unit": "kilo", "cash": 2500, "credit": 2500},
+            {"id": 8, "nameAr": "قطع ذيول سلمون من 250-350جم", "nameEn": "Salmon Tail Cuts, 250–350g", "origin": "Norway", "category": "salmon", "state": "مجمد", "unit": "kilo", "cash": 500, "credit": 500},
+            {"id": 9, "nameAr": "سلمون بورشن بريميوم قطع مميزة 200جم", "nameEn": "Premium Portion 200 gm", "origin": "Norway", "category": "salmon", "state": "مجمد", "unit": "kilo", "cash": 1000, "credit": 1000},
+            {"id": 10, "nameAr": "سلمون بورشن بريميوم قطع مميزة210-230جم", "nameEn": "Premium Portion 210-230 gm", "origin": "Norway", "category": "salmon", "state": "مجمد", "unit": "kilo", "cash": 1000, "credit": 1000},
+            {"id": 11, "nameAr": "سلمون بورشن بريميوم قطع مميزة 230-250 جم", "nameEn": "Premium Portion 230-250 gm", "origin": "Norway", "category": "salmon", "state": "مجمد", "unit": "kilo", "cash": 1000, "credit": 1000},
+            {"id": 12, "nameAr": "سلمون بورشن سكين اون قطع200 -220 جرام", "nameEn": "Salmon Portion Skin on 200-220 gm", "origin": "Norway", "category": "salmon", "state": "مجمد", "unit": "kilo", "cash": 950, "credit": 950},
+            {"id": 13, "nameAr": "سلمون بورشن سكين أون قطع من 180-200 جم", "nameEn": "Salmon Portion Skin-On 180-200g", "origin": "Norway", "category": "salmon", "state": "مجمد", "unit": "kilo", "cash": 950, "credit": 950},
+            {"id": 14, "nameAr": "سلمون بورشن سكين أون قطع من 160-180 جم", "nameEn": "Salmon Portion Skin-On 160-180g", "origin": "Norway", "category": "salmon", "state": "مجمد", "unit": "kilo", "cash": 950, "credit": 950},
+            {"id": 15, "nameAr": "سلمون بورشن سكين أوف قطع من 200-220جم", "nameEn": "Salmon Portion Skin-Off 200-220g", "origin": "Norway", "category": "salmon", "state": "مجمد", "unit": "kilo", "cash": 1000, "credit": 1000},
+            {"id": 16, "nameAr": "سلمون بورشن سكين أوف قطع 180 -200 جرام", "nameEn": "Salmon Portion Skin off 180 -200 gm", "origin": "Norway", "category": "salmon", "state": "مجمد", "unit": "kilo", "cash": 1000, "credit": 1000},
+            {"id": 17, "nameAr": "سلمون بورشن سكين أوف قطع من 160-180جم", "nameEn": "Salmon Portion Skin-Off 160-180g", "origin": "Norway", "category": "salmon", "state": "مجمد", "unit": "kilo", "cash": 1000, "credit": 1000},
+            {"id": 18, "nameAr": "ستيك سلمون بدون شوك قطعية مميزة 200-250 جم", "nameEn": "Salmon Steak Boneless Special Cut 200-250g", "origin": "Norway", "category": "salmon", "state": "مجمد", "unit": "kilo", "cash": 900, "credit": 900},
+            {"id": 19, "nameAr": "ستيك سلمون بالبزل بشوك قطعية مميزة 200-250 جم", "nameEn": "Salmon Steak Bone-In Special Cut 200-250g", "origin": "Norway", "category": "salmon", "state": "مجمد", "unit": "kilo", "cash": 750, "credit": 750},
+            {"id": 20, "nameAr": "سلمون فيليه سكين اون بدون شوك قطعية تريمD", "nameEn": "Salmon Fillet Skin On Boneless Trim D", "origin": "Norway", "category": "salmon", "state": "مجمد", "unit": "kilo", "cash": 900, "credit": 900},
+            {"id": 21, "nameAr": "سلمون فيليه سكين اوف بدون شوك قطعية تريم E", "nameEn": "Salmon Fillet Skin Off Boneless Trim E", "origin": "Norway", "category": "salmon", "state": "مجمد", "unit": "kilo", "cash": 950, "credit": 950},
+            {"id": 22, "nameAr": "سلمون كيوبس بدون جلد مكعبات 2*2 سم", "nameEn": "Salmon Cubes Skinless 2x2 cm", "origin": "Norway", "category": "salmon", "state": "مجمد", "unit": "kilo", "cash": 750, "credit": 750},
+            {"id": 23, "nameAr": "سلمون مدخن سلايس ألترا النرويجي 1000 ك كافيارى", "nameEn": "Norwegian Ultra Smoked Salmon Slices 1000g Caviale", "origin": "Norway", "category": "smoked salamon", "state": "مجمد", "unit": "kilo", "cash": 1180, "credit": 1180},
+            {"id": 24, "nameAr": "سلمون مدخن سلايس النرويجي 1000 جرام كافيارى", "nameEn": "Norwegian Smoked Salmon Slices 1000g Caviale", "origin": "Norway", "category": "smoked salamon", "state": "مجمد", "unit": "kilo", "cash": 1100, "credit": 1100},
+            {"id": 25, "nameAr": "سلمون مدخن سلايس الترا نرويجي كافياري 500 جرام", "nameEn": "Smoked Salmon Slices Ultra 500 Gram Caviale", "origin": "Norway", "category": "smoked salamon", "state": "مجمد", "unit": "Pack 500 Gm", "cash": 615, "credit": 615},
+            {"id": 26, "nameAr": "سلمون مدخن سلايس نرويجي كافياري 500 جرام", "nameEn": "Smoked Salmon Slices 500 Gram Caviale", "origin": "Norway", "category": "smoked salamon", "state": "مجمد", "unit": "Pack 500 Gm", "cash": 575, "credit": 575},
+            {"id": 27, "nameAr": "سلمون مدخن سلايس النرويجي 250 ك كافيارى", "nameEn": "Norwegian Smoked Salmon Slices 250g Caviale", "origin": "Norway", "category": "smoked salamon", "state": "مجمد", "unit": "Pack 250 Gm", "cash": 300, "credit": 300},
+            {"id": 28, "nameAr": "سلمون مدخن سلايس النرويجي 100 ك كافيارى", "nameEn": "Norwegian Smoked Salmon Slices 100g Caviale", "origin": "Norway", "category": "smoked salamon", "state": "مجمد", "unit": "Pack 100 Gm", "cash": 140, "credit": 140},
+            {"id": 29, "nameAr": "سلمون مدخن كافيارى بلوك 1 كجم", "nameEn": "Smoked Salmon Block 1 kg Caviale", "origin": "Norway", "category": "smoked salamon", "state": "مجمد", "unit": "kilo", "cash": 1000, "credit": 1000},
+            {"id": 30, "nameAr": "سلمون مدخن كافيارى بلوك 500 غرام", "nameEn": "Smoked Salmon Block 500 Gram Caviale", "origin": "Norway", "category": "smoked salamon", "state": "مجمد", "unit": "Pack 500 Gm", "cash": 525, "credit": 525},
+            {"id": 31, "nameAr": "سلمون مدخن كافيارى بلوك 250 غرام", "nameEn": "Smoked Salmon Block 250 Gram Caviale", "origin": "Norway", "category": "smoked salamon", "state": "مجمد", "unit": "Pack 250 Gm", "cash": 275, "credit": 275},
+            {"id": 32, "nameAr": "سلمون مدخن كافياري قطعية الترا سلايس 150 جرام", "nameEn": "Ultra Sliced Smoked Salmon 150g Caviale", "origin": "Norway", "category": "smoked salamon", "state": "مجمد", "unit": "Pack 150 Gm", "cash": 190, "credit": 190},
+            {"id": 33, "nameAr": "سلمون مدخن كافيارى قطعية الترا سلايس 100 جرام", "nameEn": "Ultra Sliced Smoked Salmon 100g Caviale", "origin": "Norway", "category": "smoked salamon", "state": "مجمد", "unit": "Pack 100 Gm", "cash": 145, "credit": 145},
+            {"id": 34, "nameAr": "سلمون مدخن سولي سلايس نرويجي 1000 جرام", "nameEn": "Smoked Salmon Slices Norwegian 1000 g Soly", "origin": "Norway", "category": "smoked salamon", "state": "مجمد", "unit": "kilo", "cash": 950, "credit": 950},
+            {"id": 35, "nameAr": "سلمون مدخن سولي سلايس نرويجي 500 جرام", "nameEn": "Smoked Salmon Slices Norwegian 500 g Soly", "origin": "Norway", "category": "smoked salamon", "state": "مجمد", "unit": "Pack 500 Gm", "cash": 500, "credit": 500},
+            {"id": 36, "nameAr": "سلمون مدخن سولي سلايس نرويجي 250 جرام", "nameEn": "Smoked Salmon Slices Norwegian 250 g Soly", "origin": "Norway", "category": "smoked salamon", "state": "مجمد", "unit": "Pack 250 Gm", "cash": 260, "credit": 260},
+            {"id": 37, "nameAr": "سلمون مدخن سولي سلايس نرويجي 100 جرام", "nameEn": "Smoked Salmon Slices Norwegian 100 g Soly", "origin": "Norway", "category": "smoked salamon", "state": "مجمد", "unit": "Pack 100 Gm", "cash": 125, "credit": 125},
+            {"id": 38, "nameAr": "سلمون مدخن سولي بلوك نرويجي 1000 جرام", "nameEn": "Smoked Salmon Block Norwegian 1000 g Soly", "origin": "Norway", "category": "smoked salamon", "state": "مجمد", "unit": "kilo", "cash": 900, "credit": 900},
+            {"id": 39, "nameAr": "سلمون مدخن سولي بلوك نرويجي 500 جرام", "nameEn": "Smoked Salmon Block Norwegian 500 g Soly", "origin": "Norway", "category": "smoked salamon", "state": "مجمد", "unit": "Pack 500 Gm", "cash": 475, "credit": 475},
+            {"id": 40, "nameAr": "سلمون مدخن سولي بلوك نرويجي 250 جرام", "nameEn": "Smoked Salmon Block Norwegian 250 g Soly", "origin": "Norway", "category": "smoked salamon", "state": "مجمد", "unit": "Pack 250 Gm", "cash": 250, "credit": 250},
+            {"id": 41, "nameAr": "جمبري 10-20 قشر نيو زيلاندي زبده", "nameEn": "10-20 NZ Shell-on Butter Shrimp", "origin": "New Zealand", "category": "shrimps", "state": "مجمد", "unit": "kilo", "cash": 1250, "credit": 1250},
+            {"id": 42, "nameAr": "جمبري 20-30 قشر نيو زيلاندي زبده", "nameEn": "20-30 NZ Shell-on Butter Shrimp", "origin": "New Zealand", "category": "shrimps", "state": "مجمد", "unit": "kilo", "cash": 1150, "credit": 1150},
+            {"id": 43, "nameAr": "جمبري 30-40 قشر نيو زيلاندي زبده", "nameEn": "30-40 NZ Shell-on Butter Shrimp", "origin": "New Zealand", "category": "shrimps", "state": "مجمد", "unit": "kilo", "cash": 1050, "credit": 1050},
+            {"id": 44, "nameAr": "جمبري قشر 10-20 إماراتي بلدي", "nameEn": "Local UAE Shell-on Shrimp 10-20", "origin": "UAE", "category": "shrimps", "state": "مجمد", "unit": "kilo", "cash": 1000, "credit": 1000},
+            {"id": 45, "nameAr": "جمبري قشر 20-30 إماراتي بلدي", "nameEn": "Local UAE Shell-on Shrimp 20-30", "origin": "UAE", "category": "shrimps", "state": "مجمد", "unit": "kilo", "cash": 900, "credit": 900},
+            {"id": 46, "nameAr": "جمبري قشر 30-40 إماراتي بلدي", "nameEn": "Local UAE Shell-on Shrimp 30-40", "origin": "UAE", "category": "shrimps", "state": "مجمد", "unit": "kilo", "cash": 800, "credit": 800},
+            {"id": 47, "nameAr": "جمبري قشر 40-50 إماراتي بلدي", "nameEn": "Local UAE Shell-on Shrimp 40-50", "origin": "UAE", "category": "shrimps", "state": "مجمد", "unit": "kilo", "cash": 700, "credit": 700},
+            {"id": 48, "nameAr": "جمبري قشر 50-60 إماراتي بلدي", "nameEn": "Local UAE Shell-on Shrimp 50-60", "origin": "UAE", "category": "shrimps", "state": "مجمد", "unit": "kilo", "cash": 600, "credit": 600},
+            {"id": 49, "nameAr": "جمبري قشر 60-70 إماراتي بلدي", "nameEn": "Local UAE Shell-on Shrimp 60-70", "origin": "UAE", "category": "shrimps", "state": "مجمد", "unit": "kilo", "cash": 550, "credit": 550},
+            {"id": 50, "nameAr": "جمبري مفرز مقشر نيو زيلاندي 20-30 زبدة P&D", "nameEn": "P&D NZ Butter Peeled Shrimp 20-30", "origin": "New Zealand", "category": "shrimps", "state": "مجمد", "unit": "kilo", "cash": 1400, "credit": 1400},
+            {"id": 51, "nameAr": "جمبري مفرز مقشر نيو زيلاندي 30-40 زبدة P&D", "nameEn": "P&D NZ Butter Peeled Shrimp 30-40", "origin": "New Zealand", "category": "shrimps", "state": "مجمد", "unit": "kilo", "cash": 1300, "credit": 1300},
+            {"id": 52, "nameAr": "جمبري مقشر 20-30 إماراتي بلدي P&D", "nameEn": "Local UAE Peeled Shrimp P&D 20-30", "origin": "UAE", "category": "shrimps", "state": "مجمد", "unit": "kilo", "cash": 1150, "credit": 1150},
+            {"id": 53, "nameAr": "جمبري مقشر 30-40 إماراتي بلدي P&D", "nameEn": "Local UAE Peeled Shrimp P&D 30-40", "origin": "UAE", "category": "shrimps", "state": "مجمد", "unit": "kilo", "cash": 1050, "credit": 1050},
+            {"id": 54, "nameAr": "جمبري مقشر 40-50 إماراتي بلدي P&D", "nameEn": "Local UAE Peeled Shrimp P&D 40-50", "origin": "UAE", "category": "shrimps", "state": "مجمد", "unit": "kilo", "cash": 950, "credit": 950},
+            {"id": 55, "nameAr": "جمبري مقشر 50-60 إماراتي بلدي P&D", "nameEn": "Local UAE Peeled Shrimp P&D 50-60", "origin": "UAE", "category": "shrimps", "state": "مجمد", "unit": "kilo", "cash": 850, "credit": 850},
+            {"id": 56, "nameAr": "جمبري مقشر 60-70 إماراتي بلدي P&D", "nameEn": "Local UAE Peeled Shrimp P&D 60-70", "origin": "UAE", "category": "shrimps", "state": "مجمد", "unit": "kilo", "cash": 750, "credit": 750},
+            {"id": 57, "nameAr": "جمبري باترفلاي إماراتي 20-30 open back", "nameEn": "UAE Butterfly Shrimp Open Back 20-30", "origin": "UAE", "category": "shrimps", "state": "مجمد", "unit": "kilo", "cash": 1100, "credit": 1100},
+            {"id": 58, "nameAr": "جمبري باترفلاي إماراتي 30-40 open back", "nameEn": "UAE Butterfly Shrimp Open Back 30-40", "origin": "UAE", "category": "shrimps", "state": "مجمد", "unit": "kilo", "cash": 1000, "credit": 1000},
+            {"id": 59, "nameAr": "جمبري ساندوتش مقشر إماراتي", "nameEn": "UAE Sandwich Peeled Shrimp", "origin": "UAE", "category": "shrimps", "state": "مجمد", "unit": "kilo", "cash": 650, "credit": 650},
+            {"id": 60, "nameAr": "سولي جمبري اورجينال بريديد عادي 400 جرام", "nameEn": "Soly Regular Original Breaded Shrimp 400 gram", "origin": "Egypt", "category": "Breaded", "state": "مجمد", "unit": "kilo", "cash": 650, "credit": 750},
+            {"id": 61, "nameAr": "سولي جمبري اورجينال بريديد سبايسي 400 جرام", "nameEn": "Soly Regular Original Breaded Shrimp Spicy 400 gram", "origin": "Egypt", "category": "Breaded", "state": "مجمد", "unit": "kilo", "cash": 650, "credit": 750},
+            {"id": 62, "nameAr": "سولي جمبري ساندويتش بريديد عادي 400 جرام", "nameEn": "Soly Shrimp Breaded Sandwich Regular 400 gram", "origin": "Egypt", "category": "Breaded", "state": "مجمد", "unit": "kilo", "cash": 650, "credit": 750},
+            {"id": 63, "nameAr": "سولي جمبري ساندويتش بريديد سبايسي 400 جرام", "nameEn": "Soly Shrimp Breaded Spicy Sandwich 400 gram", "origin": "Egypt", "category": "Breaded", "state": "مجمد", "unit": "kilo", "cash": 650, "credit": 750},
+            {"id": 64, "nameAr": "سولي برجر جمبري 400 جرام", "nameEn": "Soly Shrimp Burger 400 gram", "origin": "Egypt", "category": "Breaded", "state": "مجمد", "unit": "kilo", "cash": 900, "credit": 1000},
+            {"id": 65, "nameAr": "كافيلي كراب روكتس 400 جم", "nameEn": "crab rockets 400 gm", "origin": "Egypt", "category": "Breaded", "state": "مجمد", "unit": "kilo", "cash": 1200, "credit": 1200},
+            {"id": 66, "nameAr": "كافيلي فيش فينجر 400 جرام", "nameEn": "Caviale Fish Finger 400 gram", "origin": "Egypt", "category": "Breaded", "state": "مجمد", "unit": "kilo", "cash": 550, "credit": 650},
+            {"id": 67, "nameAr": "كافيالي سامبوسك جمبري و لحم كابوريا 300 غرام", "nameEn": "Caviale Sambosak shrimps and crab meat 300 Gram", "origin": "Egypt", "category": "Breaded", "state": "مجمد", "unit": "kilo", "cash": 750, "credit": 750},
+            {"id": 68, "nameAr": "سولي جمبري كنافه بريميم 400 جرام", "nameEn": "Soly Shrimp Kunafa Premium 400 gram", "origin": "Egypt", "category": "Breaded", "state": "مجمد", "unit": "kilo", "cash": 740, "credit": 860},
+            {"id": 69, "nameAr": "كافيلي جمبري باتر فلاي بريديد 400 جرام", "nameEn": "Caviale Shrimp Butterflay Breaded 400 gram", "origin": "Egypt", "category": "Breaded", "state": "مجمد", "unit": "kilo", "cash": 850, "credit": 950},
+            {"id": 70, "nameAr": "سي باس قاروص فيليه سكين أون 200–300 جم", "nameEn": "Sea Bass Fillet Skin-On 200–300g", "origin": "Egypt", "category": "fish", "state": "مجمد", "unit": "kilo", "cash": 600, "credit": 600},
+            {"id": 71, "nameAr": "سي باس قاروص فيليه سكين أون 300–400 جم", "nameEn": "Sea Bass Fillet Skin-On 300–400g", "origin": "Egypt", "category": "fish", "state": "مجمد", "unit": "kilo", "cash": 650, "credit": 650},
+            {"id": 72, "nameAr": "سي باس قاروص فيليه سكين أون 400–500 جم", "nameEn": "Sea Bass Fillet Skin-On 400–500g", "origin": "Egypt", "category": "fish", "state": "مجمد", "unit": "kilo", "cash": 700, "credit": 700},
+            {"id": 73, "nameAr": "سي باس قاروص فيليه سكين أوف 200–300 جم", "nameEn": "Sea Bass Fillet Skin-Off 200–300g", "origin": "Egypt", "category": "fish", "state": "مجمد", "unit": "kilo", "cash": 650, "credit": 650},
+            {"id": 74, "nameAr": "سي باس قاروص فيليه سكين أوف 300–400 جم", "nameEn": "Sea Bass Fillet Skin-Off 300–400g", "origin": "Egypt", "category": "fish", "state": "مجمد", "unit": "kilo", "cash": 700, "credit": 700},
+            {"id": 75, "nameAr": "سي باس قاروص فيليه سكين أوف 400–500 جم", "nameEn": "Sea Bass Fillet Skin-Off 400–500g", "origin": "Egypt", "category": "fish", "state": "مجمد", "unit": "kilo", "cash": 750, "credit": 750},
+            {"id": 76, "nameAr": "دينيس فيليه سكين أون 200–300 جم", "nameEn": "Sea Bream Fillet Skin-On 200–300g", "origin": "Egypt", "category": "fish", "state": "مجمد", "unit": "kilo", "cash": 600, "credit": 600},
+            {"id": 77, "nameAr": "دينيس فيليه سكين أون 300–400 جم", "nameEn": "Sea Bream Fillet Skin-On 300–400g", "origin": "Egypt", "category": "fish", "state": "مجمد", "unit": "kilo", "cash": 650, "credit": 650},
+            {"id": 78, "nameAr": "دينيس فيليه سكين أوف 200–300 جم", "nameEn": "Sea Bream Fillet Skin-Off 200–300g", "origin": "Egypt", "category": "fish", "state": "مجمد", "unit": "kilo", "cash": 650, "credit": 650},
+            {"id": 79, "nameAr": "دينيس فيليه سكين أوف 300–400 جم", "nameEn": "Sea Bream Fillet Skin-Off 300–400g", "origin": "Egypt", "category": "fish", "state": "مجمد", "unit": "kilo", "cash": 700, "credit": 700},
+            {"id": 80, "nameAr": "سمك قاروص كامل منظف ( 400 - 600 جم)", "nameEn": "Cleaned Sea Bass Fish Whole (400 - 600g)", "origin": "Egypt", "category": "fish", "state": "مجمد", "unit": "kilo", "cash": 450, "credit": 450},
+            {"id": 81, "nameAr": "سمك دينيس كامل منظف ( 400 - 600 جم)", "nameEn": "Cleaned Sea Bream Fish Whole (400 - 600g)", "origin": "Egypt", "category": "fish", "state": "مجمد", "unit": "kilo", "cash": 450, "credit": 450},
+            {"id": 82, "nameAr": "فيليه قشر بياض نمرة 1 ممتاز", "nameEn": "Nile Perch Fillet Grade 1 Premium", "origin": "Egypt", "category": "fish", "state": "مجمد", "unit": "kilo", "cash": 420, "credit": 420},
+            {"id": 83, "nameAr": "فيليه هامور أبيض ممتاز", "nameEn": "Grouper Fillet White Premium", "origin": "UAE", "category": "fish", "state": "مجمد", "unit": "kilo", "cash": 550, "credit": 550},
+            {"id": 84, "nameAr": "فيليه مكرونة بلدي مجمد", "nameEn": "Local Frozen Macaroni Fish Fillet", "origin": "Egypt", "category": "fish", "state": "مجمد", "unit": "kilo", "cash": 320, "credit": 320},
+            {"id": 85, "nameAr": "فيليه بلطي نمرة 1 ممتاز", "nameEn": "Tilapia Fillet Grade 1 Premium", "origin": "Egypt", "category": "fish", "state": "مجمد", "unit": "kilo", "cash": 260, "credit": 260},
+            {"id": 86, "nameAr": "وقار بلدي كامل 1-2 كجم", "nameEn": "Local White Grouper Whole 1-2 kg", "origin": "Egypt", "category": "fish", "state": "مجمد", "unit": "kilo", "cash": 600, "credit": 600},
+            {"id": 87, "nameAr": "وقار بلدي كامل 2-4 كجم", "nameEn": "Local White Grouper Whole 2-4 kg", "origin": "Egypt", "category": "fish", "state": "مجمد", "unit": "kilo", "cash": 650, "credit": 650},
+            {"id": 88, "nameAr": "لوت بلدي كامل 1-2 كجم", "nameEn": "Local Meagre Fish Whole 1-2 kg", "origin": "Egypt", "category": "fish", "state": "مجمد", "unit": "kilo", "cash": 350, "credit": 350},
+            {"id": 89, "nameAr": "لوت بلدي كامل 2-4 كجم", "nameEn": "Local Meagre Fish Whole 2-4 kg", "origin": "Egypt", "category": "fish", "state": "مجمد", "unit": "kilo", "cash": 380, "credit": 380},
+            {"id": 90, "nameAr": "سمك بوري ممتاز 3-4 حبات/كجم", "nameEn": "Grey Mullet Fish 3-4 pcs/kg", "origin": "Egypt", "category": "fish", "state": "مجمد", "unit": "kilo", "cash": 220, "credit": 220},
+            {"id": 91, "nameAr": "سمك بوري ممتاز 2-3 حبات/كجم", "nameEn": "Grey Mullet Fish 2-3 pcs/kg", "origin": "Egypt", "category": "fish", "state": "مجمد", "unit": "kilo", "cash": 240, "credit": 240},
+            {"id": 92, "nameAr": "سمك بلطي ممتاز نمرة 1 (2-3 حبة/كجم)", "nameEn": "Tilapia Fish Grade 1 (2-3 pcs/kg)", "origin": "Egypt", "category": "fish", "state": "مجمد", "unit": "kilo", "cash": 130, "credit": 130},
+            {"id": 93, "nameAr": "سبيط بلدي قمع منظف ممتاز", "nameEn": "Cleaned Local Calamari Cone", "origin": "Egypt", "category": "shellfish", "state": "مجمد", "unit": "kilo", "cash": 650, "credit": 650},
+            {"id": 94, "nameAr": "سبيط بلدي شرائح (سلايس)", "nameEn": "Local Calamari Slices", "origin": "Egypt", "category": "shellfish", "state": "مجمد", "unit": "kilo", "cash": 600, "credit": 600},
+            {"id": 95, "nameAr": "سبيط بلدي أصابع (فينجر)", "nameEn": "Local Calamari Strips / Fingers", "origin": "Egypt", "category": "shellfish", "state": "مجمد", "unit": "kilo", "cash": 580, "credit": 580},
+            {"id": 96, "nameAr": "سبيط بلدي مكعبات (كيوبس)", "nameEn": "Local Calamari Cubes", "origin": "Egypt", "category": "shellfish", "state": "مجمد", "unit": "kilo", "cash": 550, "credit": 550},
+            {"id": 97, "nameAr": "كاليماري رينجز (حلقات) أبيض ممتاز", "nameEn": "Premium White Calamari Rings", "origin": "China", "category": "shellfish", "state": "مجمد", "unit": "kilo", "cash": 450, "credit": 450},
+            {"id": 98, "nameAr": "أخطبوط بلدي منظف 1-2 كجم", "nameEn": "Cleaned Local Octopus 1-2 kg", "origin": "Egypt", "category": "shellfish", "state": "مجمد", "unit": "kilo", "cash": 500, "credit": 500},
+            {"id": 99, "nameAr": "أخطبوط بلدي منظف 2-3 كجم", "nameEn": "Cleaned Local Octopus 2-3 kg", "origin": "Egypt", "category": "shellfish", "state": "مجمد", "unit": "kilo", "cash": 550, "credit": 550},
+            {"id": 100, "nameAr": "جندوفلي / بكالويز بلدي طازج منظف", "nameEn": "Fresh Cleaned Local Clams", "origin": "Egypt", "category": "shellfish", "state": "حي", "unit": "kilo", "cash": 180, "credit": 180},
+            {"id": 101, "nameAr": "بلح بحر أسود نصف قشرة نيوزيلاندي", "nameEn": "NZ Half Shell Black Mussels", "origin": "New Zealand", "category": "shellfish", "state": "مجمد", "unit": "kilo", "cash": 550, "credit": 550},
+            {"id": 102, "nameAr": "بلح بحر أخضر نصف قشرة نيوزيلاندي", "nameEn": "NZ Half Shell Greenshell Mussels", "origin": "New Zealand", "category": "shellfish", "state": "مجمد", "unit": "kilo", "cash": 650, "credit": 650},
+            {"id": 103, "nameAr": "كابوريا نتايات بلدي مبطرخة 4-6 حبة/كجم", "nameEn": "Local Female Crab Full Roe 4-6 pcs/kg", "origin": "Egypt", "category": "shellfish", "state": "مجمد", "unit": "kilo", "cash": 450, "credit": 450},
+            {"id": 104, "nameAr": "كابوريا نتايات بلدي مبطرخة 6-8 حبة/كجم", "nameEn": "Local Female Crab Full Roe 6-8 pcs/kg", "origin": "Egypt", "category": "shellfish", "state": "مجمد", "unit": "kilo", "cash": 380, "credit": 380},
+            {"id": 105, "nameAr": "كابوريا ذكور بلدي 4-6 حبة/كجم", "nameEn": "Local Male Crab 4-6 pcs/kg", "origin": "Egypt", "category": "shellfish", "state": "مجمد", "unit": "kilo", "cash": 280, "credit": 280},
+            {"id": 106, "nameAr": "لحم كابوريا أصابع (كراب ستيكس)", "nameEn": "Crab Sticks / Imitation Crab Meat", "origin": "Thailand", "category": "shellfish", "state": "مجمد", "unit": "kilo", "cash": 240, "credit": 240},
+            {"id": 107, "nameAr": "استاكوزا بلدي كاملة مجمدة 300–500 جم", "nameEn": "Whole Local Lobster 300–500g", "origin": "Egypt", "category": "shellfish", "state": "مجمد", "unit": "kilo", "cash": 1200, "credit": 1200},
+            {"id": 108, "nameAr": "استاكوزا بلدي كاملة مجمدة 500–800 جم", "nameEn": "Whole Local Lobster 500–800g", "origin": "Egypt", "category": "shellfish", "state": "مجمد", "unit": "kilo", "cash": 1400, "credit": 1400},
+            {"id": 109, "nameAr": "تيل استاكوزا (ذيل استاكوزا) 150-200 جم", "nameEn": "Lobster Tail 150-200g", "origin": "Canada", "category": "shellfish", "state": "مجمد", "unit": "kilo", "cash": 1800, "credit": 1800},
+            {"id": 110, "nameAr": "سي فود ميكس فاخر (جمبري + سبيط + فيليه + جندوفلي)", "nameEn": "Luxury Seafood Mix (Shrimp+Squid+Fillet+Clam)", "origin": "Egypt", "category": "seafood specialities", "state": "مجمد", "unit": "kilo", "cash": 380, "credit": 380},
+            {"id": 111, "nameAr": "سي فود ميكس بريميوم (جمبري + سبيط + بلح بحر + كابوريا)", "nameEn": "Premium Seafood Mix with Mussels & Crab", "origin": "Egypt", "category": "seafood specialities", "state": "مجمد", "unit": "kilo", "cash": 450, "credit": 450},
+            {"id": 112, "nameAr": "شوربة سي فود ميكس جاهزة للطهي", "nameEn": "Ready to Cook Seafood Soup Mix", "origin": "Egypt", "category": "seafood specialities", "state": "مجمد", "unit": "kilo", "cash": 290, "credit": 290},
+            {"id": 113, "nameAr": "بطارخ بوري بلدي جافة ممتازة", "nameEn": "Dried Local Mullet Bottarga Premium", "origin": "Egypt", "category": "seafood specialities", "state": "مبرد", "unit": "kilo", "cash": 2800, "credit": 2800},
+            {"id": 114, "nameAr": "بطارخ بوري بلدي طازجة/مجمدة", "nameEn": "Fresh/Frozen Local Mullet Roe", "origin": "Egypt", "category": "seafood specialities", "state": "مجمد", "unit": "kilo", "cash": 1100, "credit": 1100},
+            {"id": 115, "nameAr": "كافيار أسود فاخر 50 جم", "nameEn": "Luxury Black Caviar 50g Jar", "origin": "Russia", "category": "seafood specialities", "state": "مبرد", "unit": "Pack 50 Gm", "cash": 1500, "credit": 1500},
+            {"id": 116, "nameAr": "كافيار أحمر (سلمون) فاخر 100 جم", "nameEn": "Luxury Red Salmon Caviar 100g Jar", "origin": "Russia", "category": "seafood specialities", "state": "مبرد", "unit": "Pack 100 Gm", "cash": 950, "credit": 950},
+            {"id": 117, "nameAr": "تونة ألبكور بيضاء فيليه قطع في الزيت", "nameEn": "Albacore White Tuna Fillet Cuts in Oil", "origin": "Spain", "category": "seafood specialities", "state": "مبرد", "unit": "kilo", "cash": 850, "credit": 850},
+            {"id": 118, "nameAr": "أنشوجة فيليه ممتازة في زيت الزيتون 100 جم", "nameEn": "Anchovy Fillets in Olive Oil 100g", "origin": "Italy", "category": "seafood specialities", "state": "مبرد", "unit": "Pack 100 Gm", "cash": 180, "credit": 180},
+            {"id": 119, "nameAr": "رنجة هولندا سوبر هولندي جودة عالية", "nameEn": "Super Dutch Smoked Herring Premium", "origin": "Netherlands", "category": "seafood specialities", "state": "مبرد", "unit": "kilo", "cash": 220, "credit": 220},
+            {"id": 120, "nameAr": "فسيخ بلدي ممتاز (بوري بلدي)", "nameEn": "Local Premium Feseekh (Salted Mullet)", "origin": "Egypt", "category": "seafood specialities", "state": "مبرد", "unit": "kilo", "cash": 450, "credit": 450},
+            {"id": 121, "nameAr": "فسيخ مخلّى فيليه في الزيت برطمان 500 جم", "nameEn": "Boneless Feseekh Fillet in Oil Jar 500g", "origin": "Egypt", "category": "seafood specialities", "state": "مبرد", "unit": "Pack 500 Gm", "cash": 320, "credit": 320},
+            {"id": 122, "nameAr": "ساردين مخلّى فيليه في الزيت 250 جم", "nameEn": "Boneless Sardine Fillet in Oil 250g", "origin": "Egypt", "category": "seafood specialities", "state": "مبرد", "unit": "Pack 250 Gm", "cash": 120, "credit": 120},
+            {"id": 123, "nameAr": "عشب بحري نوري (Nori Sheets) للـ Sushi 50 ورقة", "nameEn": "Nori Seaweed Sheets for Sushi 50 Sheets", "origin": "Japan", "category": "seafood specialities", "state": "مبرد", "unit": "Pack 50 Sheets", "cash": 350, "credit": 350}
         ];
 
-        // قراءة المنتجات وتفريغ المخزن القديم إذا كان ناقصاً
-        let storedProds = JSON.parse(localStorage.getItem('maxim_prod_v5'));
+        // المزامنة التلقائية لضمان قراءة كافة الأصناف الـ 123 بدون مشاكل
+        let storedProds = JSON.parse(localStorage.getItem('maxim_prod_v6'));
         if(!storedProds || storedProds.length < defaultProducts.length) {
-            localStorage.setItem('maxim_prod_v5', JSON.stringify(defaultProducts));
+            localStorage.setItem('maxim_prod_v6', JSON.stringify(defaultProducts));
             storedProds = defaultProducts;
         }
         let products = storedProds;
@@ -469,7 +581,7 @@
 
             let html = headers.map(h => `<th>${h}</th>`).join('');
             if(isAdmin) {
-                html += `<th style="width:90px;">${currentLang === 'ar' ? 'إجراءات' : 'Actions'}</th>`;
+                html += `<th style="width:70px;">${currentLang === 'ar' ? 'إجراءات' : 'Actions'}</th>`;
             }
             tr.innerHTML = html;
         }
@@ -520,16 +632,26 @@
             });
         }
 
-        // دالة تصدير الإكسيل المصلحة والجاهزة
+        // دالة تصدير الإكسيل المحدثة والمجربة لكافة الأصناف
         function exportDataExcel() {
             try {
-                const exportData = products.map((p, idx) => ({
+                const searchVal = document.getElementById('searchInput').value.toLowerCase();
+                const filtered = products.filter(p => {
+                    const matchSearch = p.nameAr.toLowerCase().includes(searchVal) || 
+                                        (p.nameEn && p.nameEn.toLowerCase().includes(searchVal)) || 
+                                        (p.origin && p.origin.toLowerCase().includes(searchVal));
+                    const matchCat = selectedCategory === 'all' || p.category === selectedCategory;
+                    const matchState = selectedState === 'all' || p.state === selectedState;
+                    return matchSearch && matchCat && matchState;
+                });
+
+                const exportData = filtered.map((p, idx) => ({
                     "م": idx + 1,
                     "اسم الصنف (عربي)": p.nameAr,
                     "اسم الصنف (إنجليزي)": p.nameEn || '',
                     "بلد المنشأ": p.origin || '',
-                    "التصنيف": p.category || '',
-                    "الحالة": p.state || '',
+                    "المجموعة": p.category || '',
+                    "حالة المنتج": p.state || '',
                     "الوحدة": p.unit || '',
                     "سعر الكاش": p.cash || 0,
                     "سعر الكريديت": p.credit || 0
@@ -567,14 +689,14 @@
                             nameAr: row["اسم الصنف (عربي)"] || row["اسم الصنف"] || row["Product Name"] || "صنف غير معروف",
                             nameEn: row["اسم الصنف (إنجليزي)"] || "",
                             origin: row["بلد المنشأ"] || row["Origin"] || "مصر",
-                            category: row["التصنيف"] || row["Category"] || "Breaded",
-                            state: row["الحالة"] || row["Status"] || "مجمد",
+                            category: row["المجموعة"] || row["Category"] || "Breaded",
+                            state: row["حالة المنتج"] || row["Status"] || "مجمد",
                             unit: row["الوحدة"] || row["Unit"] || "كيلو",
                             cash: Number(row["سعر الكاش"] || row["Cash Price"] || 0),
                             credit: Number(row["سعر الكريديت"] || row["Credit Price"] || 0)
                         }));
                         
-                        localStorage.setItem('maxim_prod_v5', JSON.stringify(products));
+                        localStorage.setItem('maxim_prod_v6', JSON.stringify(products));
                         renderTable();
                         alert("تم استيراد البيانات وتحديث القائمة بنجاح!");
                     }
@@ -634,7 +756,7 @@
         function deleteProduct(id) {
             if(confirm('هل انت متاكد من حذف هذا الصنف؟')) {
                 products = products.filter(p => p.id !== id);
-                localStorage.setItem('maxim_prod_v5', JSON.stringify(products));
+                localStorage.setItem('maxim_prod_v6', JSON.stringify(products));
                 renderTable();
             }
         }
@@ -642,8 +764,8 @@
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
         function resetToDefault() {
-            if(confirm('هل تريد إعادة الضبط للافتراضي؟')) {
-                localStorage.removeItem('maxim_prod_v5');
+            if(confirm('هل تريد إعادة الضبط للافتراضي (123 صنف)؟')) {
+                localStorage.removeItem('maxim_prod_v6');
                 location.reload();
             }
         }
