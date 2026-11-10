@@ -251,6 +251,7 @@
 
         .action-btns { display: flex; gap: 6px; }
         .btn-act { width: 32px; height: 32px; border-radius: 6px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-act-edit { background-color: #dbeafe; color: #2563eb; }
         .btn-act-del { background-color: #fee2e2; color: #dc2626; }
 
         .modal {
@@ -261,6 +262,7 @@
         .modal-body {
             background: white; border-radius: 16px; padding: 25px; width: 100%; max-width: 520px;
             box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+            max-height: 90vh; overflow-y: auto;
         }
         .form-item { margin-bottom: 14px; }
         .form-item label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 5px; color: #334155; }
@@ -315,6 +317,7 @@
         </div>
     </header>
 
+    <!-- شريط الأدمن الكامل مع كافة الخيارات القديمة -->
     <div class="admin-bar" id="adminBar">
         <div class="admin-container">
             <div class="admin-title">
@@ -322,15 +325,33 @@
                 <span id="txtAdminPanelTitle">لوحة تحكم الأدمن (Admin Panel)</span>
             </div>
             <div class="admin-buttons">
+                <button class="btn-admin btn-admin-black" onclick="openItemModal()">
+                    <i class="fa-solid fa-plus-circle"></i> <span>إضافة صنف جديد</span>
+                </button>
+                <button class="btn-admin btn-admin-white" onclick="openCategoryManageModal()">
+                    <i class="fa-solid fa-folder-plus"></i> <span>إدارة المجموعات</span>
+                </button>
+
+                <button class="btn-admin btn-admin-darkblue" onclick="openTitleEditModal()">
+                    <i class="fa-solid fa-heading"></i> <span>تعديل العنوان</span>
+                </button>
+                <button class="btn-admin btn-admin-darkblue" onclick="openLogoModal()">
+                    <i class="fa-solid fa-image"></i> <span>تغيير اللوجو 🖼️</span>
+                </button>
+                <button class="btn-admin btn-admin-darkblue" onclick="openPasswordChangeModal()">
+                    <i class="fa-solid fa-key"></i> <span>تغيير كلمة السر</span>
+                </button>
+
                 <button class="btn-admin btn-admin-green" onclick="exportDataExcel()">
-                    <i class="fa-solid fa-file-excel"></i> <span id="btnExportTxt">تصدير إكسيل (XLSX)</span>
+                    <i class="fa-solid fa-file-excel"></i> <span>تصدير إكسيل (XLSX)</span>
                 </button>
                 <button class="btn-admin btn-admin-green" onclick="triggerImportExcel()">
-                    <i class="fa-solid fa-file-import"></i> <span id="btnImportTxt">استيراد إكسيل (XLSX)</span>
+                    <i class="fa-solid fa-file-import"></i> <span>استيراد إكسيل (XLSX)</span>
                 </button>
                 <input type="file" id="importExcelInput" accept=".xlsx, .xls" style="display:none;" onchange="importDataExcel(event)">
+                
                 <button class="btn-admin btn-admin-red" onclick="resetToDefault()">
-                    <i class="fa-solid fa-rotate-right"></i> <span id="btnResetTxt">استعادة الافتراضي (123 صنف)</span>
+                    <i class="fa-solid fa-rotate-right"></i> <span>استعادة الافتراضي (123 صنف)</span>
                 </button>
             </div>
         </div>
@@ -374,16 +395,107 @@
     </div>
 
     <!-- Modals -->
+    <!-- نافذة كلمة السر -->
     <div class="modal" id="passwordModal">
         <div class="modal-body">
-            <h3 style="margin-bottom: 18px; color:#0f172a;" id="lblAdminAuth">تسجيل الدخول لوضع الأدمن</h3>
+            <h3 style="margin-bottom: 18px; color:#0f172a;">تسجيل الدخول لوضع الأدمن</h3>
             <div class="form-item">
-                <label id="lblEnterPassword">أدخل كلمة السر للدخول للإعدادات:</label>
+                <label>أدخل كلمة السر للدخول للإعدادات:</label>
                 <input type="password" id="adminPassInput" placeholder="****">
             </div>
             <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
                 <button class="btn-ui btn-dark-pill" onclick="closeModal('passwordModal')">إلغاء</button>
                 <button class="btn-ui btn-yellow" onclick="verifyAdminPassword()">دخول</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة إضافة وتعديل صنف -->
+    <div class="modal" id="itemModal">
+        <div class="modal-body">
+            <h3 style="margin-bottom: 18px; color:#0f172a;" id="modalItemTitle">إضافة صنف جديد</h3>
+            <div class="form-item"><label>اسم الصنف (عربي)</label><input type="text" id="itemNameAr"></div>
+            <div class="form-item"><label>اسم الصنف (English)</label><input type="text" id="itemNameEn"></div>
+            <div class="form-item"><label>بلد المنشأ (Origin)</label><input type="text" id="itemOrigin" placeholder="مثال: مصر"></div>
+            <div class="form-item">
+                <label>المجموعة (التصنيف)</label>
+                <select id="itemCategory"></select>
+            </div>
+            <div class="form-item">
+                <label>حالة المنتج</label>
+                <select id="itemState">
+                    <option value="مجمد">مجمد</option>
+                    <option value="مبرد">مبرد</option>
+                    <option value="حي">حي</option>
+                </select>
+            </div>
+            <div class="form-item"><label>الوحدة</label><input type="text" id="itemUnit" value="كيلو"></div>
+            <div class="form-item"><label>سعر الكاش (ج.م)</label><input type="number" id="itemCashPrice"></div>
+            <div class="form-item"><label>سعر الكريديت (ج.م)</label><input type="number" id="itemCreditPrice"></div>
+            
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                <button class="btn-ui btn-dark-pill" onclick="closeModal('itemModal')">إلغاء</button>
+                <button class="btn-ui btn-yellow" onclick="saveItem()">حفظ البيانات</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة تعديل اللوجو -->
+    <div class="modal" id="logoModal">
+        <div class="modal-body">
+            <h3 style="margin-bottom: 18px; color:#0f172a;">تغيير لوجو الشعار</h3>
+            <div class="form-item">
+                <label>اختر صورة اللوجو من جهازك:</label>
+                <input type="file" id="logoFileInput" accept="image/*">
+            </div>
+            <div class="form-item">
+                <label>أو ضع رابط اللوجو أونلاين (URL):</label>
+                <input type="text" id="logoUrlInput" placeholder="https://...">
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                <button class="btn-ui btn-dark-pill" onclick="closeModal('logoModal')">إلغاء</button>
+                <button class="btn-ui btn-yellow" onclick="saveLogo()">حفظ اللوجو</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة تعديل العناوين -->
+    <div class="modal" id="titleEditModal">
+        <div class="modal-body">
+            <h3 style="margin-bottom: 18px; color:#0f172a;">تعديل عناوين الشعار الهيدر</h3>
+            <div class="form-item"><label>العنوان الرئيسي (عربي)</label><input type="text" id="titleArInput"></div>
+            <div class="form-item"><label>العنوان الرئيسي (English)</label><input type="text" id="titleEnInput"></div>
+            <div class="form-item"><label>العنوان الفرعي (عربي)</label><input type="text" id="subTitleArInput"></div>
+            <div class="form-item"><label>العنوان الفرعي (English)</label><input type="text" id="subTitleEnInput"></div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                <button class="btn-ui btn-dark-pill" onclick="closeModal('titleEditModal')">إلغاء</button>
+                <button class="btn-ui btn-yellow" onclick="saveAppTitles()">حفظ العناوين</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة تغيير كلمة السر -->
+    <div class="modal" id="passwordChangeModal">
+        <div class="modal-body">
+            <h3 style="margin-bottom: 18px; color:#0f172a;">تغيير كلمة سر الأدمن</h3>
+            <div class="form-item"><label>كلمة السر الجديدة:</label><input type="password" id="newAdminPassInput"></div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                <button class="btn-ui btn-dark-pill" onclick="closeModal('passwordChangeModal')">إلغاء</button>
+                <button class="btn-ui btn-yellow" onclick="saveNewPassword()">تحديث كلمة السر</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة إضافة مجموعة جديدة -->
+    <div class="modal" id="categoryModal">
+        <div class="modal-body">
+            <h3 style="margin-bottom: 18px; color:#0f172a;">إضافة مجموعة (تصنيف) جديد</h3>
+            <div class="form-item"><label>رمز التصنيف (ID بالإنجليزي)</label><input type="text" id="catIdInput" placeholder="مثال: canned"></div>
+            <div class="form-item"><label>اسم المجموعة (عربي)</label><input type="text" id="catArInput" placeholder="مثال: المعلبات"></div>
+            <div class="form-item"><label>اسم المجموعة (English)</label><input type="text" id="catEnInput" placeholder="مثال: Canned"></div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                <button class="btn-ui btn-dark-pill" onclick="closeModal('categoryModal')">إلغاء</button>
+                <button class="btn-ui btn-yellow" onclick="saveNewCategory()">حفظ المجموعة</button>
             </div>
         </div>
     </div>
@@ -394,10 +506,20 @@
         let priceDisplayMode = 'cash';
         let selectedCategory = 'all';
         let selectedState = 'all';
+        let editingProductId = null;
 
         let adminPassword = localStorage.getItem('maxim_admin_pass') || '1234';
 
-        let categories = [
+        let logoData = localStorage.getItem('maxim_logo_data') || '';
+
+        let appTitles = JSON.parse(localStorage.getItem('maxim_title_data')) || {
+            titleAr: 'Official Price List 2026/11/10',
+            titleEn: 'Official Price List 2026/11/10',
+            subtitleAr: 'ماكسيم فود لتصنيع وتوريد المواد الغذائية',
+            subtitleEn: 'Maxim Foods Manufacturing & Supply'
+        };
+
+        let categories = JSON.parse(localStorage.getItem('maxim_cat_v6')) || [
             { id: 'all', nameAr: 'الكل', nameEn: 'All' },
             { id: 'salmon', nameAr: 'سلمون', nameEn: 'Salmon' },
             { id: 'smoked salamon', nameAr: 'سلمون مدخن', nameEn: 'Smoked Salmon' },
@@ -408,7 +530,7 @@
             { id: 'seafood specialities', nameAr: 'أصناف خاصة', nameEn: 'Seafood Specialities' }
         ];
 
-        // القائمة الكاملة (123 صنفاً) مستخرجة بالكامل من ملف الإكسيل
+        // القائمة الكاملة دون تغيير (123 صنفاً)
         let defaultProducts = [
             {"id": 1, "nameAr": "سلمون كامل نرويجي 4-5 سي بورن", "nameEn": "Salmon Whole 4-5 /Kg Seaborn", "origin": "Norway", "category": "salmon", "state": "مجمد", "unit": "kilo", "cash": 570, "credit": 570},
             {"id": 2, "nameAr": "سلمون كامل نرويجي 3-4 سي بورن", "nameEn": "Salmon Whole 3-4 /Kg Seaborn", "origin": "Norway", "category": "salmon", "state": "مجمد", "unit": "kilo", "cash": 560, "credit": 560},
@@ -535,13 +657,26 @@
             {"id": 123, "nameAr": "عشب بحري نوري (Nori Sheets) للـ Sushi 50 ورقة", "nameEn": "Nori Seaweed Sheets for Sushi 50 Sheets", "origin": "Japan", "category": "seafood specialities", "state": "مبرد", "unit": "Pack 50 Sheets", "cash": 350, "credit": 350}
         ];
 
-        // المزامنة التلقائية لضمان قراءة كافة الأصناف الـ 123 بدون مشاكل
         let storedProds = JSON.parse(localStorage.getItem('maxim_prod_v6'));
         if(!storedProds || storedProds.length < defaultProducts.length) {
             localStorage.setItem('maxim_prod_v6', JSON.stringify(defaultProducts));
             storedProds = defaultProducts;
         }
         let products = storedProds;
+
+        function renderLogo() {
+            const logoBox = document.getElementById('logoBox');
+            if(logoData) {
+                logoBox.innerHTML = `<img src="${logoData}" alt="Maxim Foods Logo">`;
+            } else {
+                logoBox.innerHTML = `<span id="logoTextFallback" class="logo-text-fallback">MAXIM FOODS</span>`;
+            }
+        }
+
+        function renderHeaderTitles() {
+            document.getElementById('headerTitle').innerText = currentLang === 'ar' ? appTitles.titleAr : appTitles.titleEn;
+            document.getElementById('headerSubtitle').innerText = currentLang === 'ar' ? appTitles.subtitleAr : appTitles.subtitleEn;
+        }
 
         function renderStatePills() {
             const container = document.getElementById('statePills');
@@ -563,13 +698,21 @@
 
         function renderCategoryPills() {
             const container = document.getElementById('categoryPills');
+            const itemSel = document.getElementById('itemCategory');
             container.innerHTML = '';
+            if(itemSel) itemSel.innerHTML = '';
+
             categories.forEach(cat => {
                 const btn = document.createElement('button');
                 btn.className = `pill-btn ${selectedCategory === cat.id ? 'active' : ''}`;
                 btn.innerText = currentLang === 'ar' ? cat.nameAr : cat.nameEn;
                 btn.onclick = () => filterCategory(cat.id, btn);
                 container.appendChild(btn);
+
+                if (cat.id !== 'all' && itemSel) {
+                    const optionText = currentLang === 'ar' ? cat.nameAr : cat.nameEn;
+                    itemSel.innerHTML += `<option value="${cat.id}">${optionText}</option>`;
+                }
             });
         }
 
@@ -581,13 +724,15 @@
 
             let html = headers.map(h => `<th>${h}</th>`).join('');
             if(isAdmin) {
-                html += `<th style="width:70px;">${currentLang === 'ar' ? 'إجراءات' : 'Actions'}</th>`;
+                html += `<th style="width:90px;">${currentLang === 'ar' ? 'إجراءات' : 'Actions'}</th>`;
             }
             tr.innerHTML = html;
         }
 
         function renderTable() {
             updateTableHeader();
+            renderHeaderTitles();
+            renderLogo();
             const tbody = document.getElementById('priceTableBody');
             tbody.innerHTML = '';
             const searchVal = document.getElementById('searchInput').value.toLowerCase();
@@ -623,6 +768,7 @@
                     ${isAdmin ? `
                         <td>
                             <div class="action-btns">
+                                <button class="btn-act btn-act-edit" onclick="editProduct(${p.id})"><i class="fa-solid fa-pen"></i></button>
                                 <button class="btn-act btn-act-del" onclick="deleteProduct(${p.id})"><i class="fa-solid fa-trash"></i></button>
                             </div>
                         </td>
@@ -632,7 +778,139 @@
             });
         }
 
-        // دالة تصدير الإكسيل المحدثة والمجربة لكافة الأصناف
+        // أزرار وإشعارات الأدمن
+        function openItemModal() {
+            editingProductId = null;
+            document.getElementById('modalItemTitle').innerText = currentLang === 'ar' ? 'إضافة صنف جديد' : 'Add New Product';
+            document.getElementById('itemNameAr').value = '';
+            document.getElementById('itemNameEn').value = '';
+            document.getElementById('itemOrigin').value = '';
+            document.getElementById('itemUnit').value = 'كيلو';
+            document.getElementById('itemCashPrice').value = '';
+            document.getElementById('itemCreditPrice').value = '';
+            document.getElementById('itemModal').classList.add('active');
+        }
+
+        function editProduct(id) {
+            const p = products.find(item => item.id === id);
+            if(!p) return;
+            editingProductId = id;
+            document.getElementById('modalItemTitle').innerText = currentLang === 'ar' ? 'تعديل بيانات الصنف' : 'Edit Product';
+            document.getElementById('itemNameAr').value = p.nameAr;
+            document.getElementById('itemNameEn').value = p.nameEn || '';
+            document.getElementById('itemOrigin').value = p.origin || '';
+            document.getElementById('itemCategory').value = p.category;
+            document.getElementById('itemState').value = p.state;
+            document.getElementById('itemUnit').value = p.unit || 'كيلو';
+            document.getElementById('itemCashPrice').value = p.cash;
+            document.getElementById('itemCreditPrice').value = p.credit;
+            document.getElementById('itemModal').classList.add('active');
+        }
+
+        function saveItem() {
+            const ar = document.getElementById('itemNameAr').value.trim();
+            if(!ar) { alert('يرجى كتابة اسم الصنف بالعربي!'); return; }
+
+            const newItem = {
+                id: editingProductId ? editingProductId : (products.length ? Math.max(...products.map(p => p.id)) + 1 : 1),
+                nameAr: ar,
+                nameEn: document.getElementById('itemNameEn').value.trim(),
+                origin: document.getElementById('itemOrigin').value.trim() || 'مصر',
+                category: document.getElementById('itemCategory').value,
+                state: document.getElementById('itemState').value,
+                unit: document.getElementById('itemUnit').value.trim() || 'كيلو',
+                cash: Number(document.getElementById('itemCashPrice').value) || 0,
+                credit: Number(document.getElementById('itemCreditPrice').value) || 0
+            };
+
+            if(editingProductId) {
+                const idx = products.findIndex(p => p.id === editingProductId);
+                if(idx !== -1) products[idx] = newItem;
+            } else {
+                products.push(newItem);
+            }
+
+            localStorage.setItem('maxim_prod_v6', JSON.stringify(products));
+            closeModal('itemModal');
+            renderTable();
+        }
+
+        function deleteProduct(id) {
+            if(confirm('هل أنت تأكد من حذف هذا الصنف؟')) {
+                products = products.filter(p => p.id !== id);
+                localStorage.setItem('maxim_prod_v6', JSON.stringify(products));
+                renderTable();
+            }
+        }
+
+        // اللوجو والعنوان وكلمة السر
+        function openLogoModal() { document.getElementById('logoModal').classList.add('active'); }
+        function saveLogo() {
+            const fileInput = document.getElementById('logoFileInput');
+            const urlInput = document.getElementById('logoUrlInput').value.trim();
+
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    logoData = e.target.result;
+                    localStorage.setItem('maxim_logo_data', logoData);
+                    closeModal('logoModal');
+                    renderTable();
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else if(urlInput) {
+                logoData = urlInput;
+                localStorage.setItem('maxim_logo_data', logoData);
+                closeModal('logoModal');
+                renderTable();
+            } else {
+                alert('اختر صورة أو أدخل رابطاً للوجو!');
+            }
+        }
+
+        function openTitleEditModal() {
+            document.getElementById('titleArInput').value = appTitles.titleAr;
+            document.getElementById('titleEnInput').value = appTitles.titleEn;
+            document.getElementById('subTitleArInput').value = appTitles.subtitleAr;
+            document.getElementById('subTitleEnInput').value = appTitles.subtitleEn;
+            document.getElementById('titleEditModal').classList.add('active');
+        }
+
+        function saveAppTitles() {
+            appTitles.titleAr = document.getElementById('titleArInput').value;
+            appTitles.titleEn = document.getElementById('titleEnInput').value;
+            appTitles.subtitleAr = document.getElementById('subTitleArInput').value;
+            appTitles.subtitleEn = document.getElementById('subTitleEnInput').value;
+            localStorage.setItem('maxim_title_data', JSON.stringify(appTitles));
+            closeModal('titleEditModal');
+            renderTable();
+        }
+
+        function openPasswordChangeModal() { document.getElementById('passwordChangeModal').classList.add('active'); }
+        function saveNewPassword() {
+            const pass = document.getElementById('newAdminPassInput').value.trim();
+            if(pass) {
+                adminPassword = pass;
+                localStorage.setItem('maxim_admin_pass', pass);
+                closeModal('passwordChangeModal');
+                alert('تم تغيير كلمة السر بنجاح!');
+            }
+        }
+
+        function openCategoryManageModal() { document.getElementById('categoryModal').classList.add('active'); }
+        function saveNewCategory() {
+            const id = document.getElementById('catIdInput').value.trim();
+            const ar = document.getElementById('catArInput').value.trim();
+            const en = document.getElementById('catEnInput').value.trim();
+            if(id && ar) {
+                categories.push({ id: id, nameAr: ar, nameEn: en || id });
+                localStorage.setItem('maxim_cat_v6', JSON.stringify(categories));
+                renderCategoryPills();
+                closeModal('categoryModal');
+            }
+        }
+
+        // الإكسيل ومزامنة الأدمن
         function exportDataExcel() {
             try {
                 const searchVal = document.getElementById('searchInput').value.toLowerCase();
@@ -660,16 +938,13 @@
                 const worksheet = XLSX.utils.json_to_sheet(exportData);
                 const workbook = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(workbook, worksheet, "قائمة الأسعار");
-                
                 XLSX.writeFile(workbook, "Maxim_Foods_PriceList_2026.xlsx");
             } catch (err) {
                 alert("حدث خطأ أثناء تصدير ملف الإكسيل: " + err.message);
             }
         }
 
-        function triggerImportExcel() {
-            document.getElementById('importExcelInput').click();
-        }
+        function triggerImportExcel() { document.getElementById('importExcelInput').click(); }
 
         function importDataExcel(e) {
             const file = e.target.files[0];
@@ -750,14 +1025,6 @@
                 renderTable();
             } else {
                 alert('كلمة السر غير صحيحة!');
-            }
-        }
-
-        function deleteProduct(id) {
-            if(confirm('هل انت متاكد من حذف هذا الصنف؟')) {
-                products = products.filter(p => p.id !== id);
-                localStorage.setItem('maxim_prod_v6', JSON.stringify(products));
-                renderTable();
             }
         }
 
